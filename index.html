@@ -1,0 +1,168 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-semibold">OverView</h1>
+            <div class="flex space-x-4">
+                <div class="relative">
+                    <input type="text" placeholder="Search" class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <button class="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg border border-gray-300">
+                    <i class="far fa-calendar-alt"></i>
+                    <span>Feb</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg border border-gray-300">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-gray-500">Total Reven</h2>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-2xl font-semibold">$734,241</span>
+                    <span class="text-green-500 text-sm flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>3.1% From last week
+                    </span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-gray-500">Total Customer</h2>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-2xl font-semibold">734,241</span>
+                    <span class="text-green-500 text-sm flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>5.1% From last week
+                    </span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-gray-500">Total Transaction</h2>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-2xl font-semibold">734</span>
+                    <span class="text-red-500 text-sm flex items-center">
+                        <i class="fas fa-arrow-down mr-1"></i>5.1% From last week
+                    </span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-gray-500">Total Product</h2>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-2xl font-semibold">841</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Section -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Invoice</h2>
+                <div class="flex items-center space-x-4">
+                    <button class="px-4 py-2 bg-gray-200 rounded-lg">Monthly</button>
+                    <button class="px-4 py-2 bg-gray-200 rounded-lg">Sales</button>
+                    <div class="relative">
+                        <input type="text" placeholder="Search By Email" class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 mb-4">
+                <span class="px-3 py-1 bg-gray-200 rounded-full">All Invoice <span class="font-semibold">7000</span></span>
+                <span class="px-3 py-1 bg-purple-200 text-purple-800 rounded-full">Paid <span class="font-semibold">5000</span></span>
+                <span class="px-3 py-1 bg-blue-200 text-blue-800 rounded-full">Pending <span class="font-semibold">1400</span></span>
+                <span class="px-3 py-1 bg-red-200 text-red-800 rounded-full">Pending <span class="font-semibold">600</span></span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">Invoice ID</th>
+                            <th class="py-2 px-4 border-b">Name Client</th>
+                            <th class="py-2 px-4 border-b">Email</th>
+                            <th class="py-2 px-4 border-b">Start Date</th>
+                            <th class="py-2 px-4 border-b">Due Date</th>
+                            <th class="py-2 px-4 border-b">Invoice Amount</th>
+                            <th class="py-2 px-4 border-b">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-001</td>
+                            <td class="py-2 px-4 border-b">Kamisato Ayaka</td>
+                            <td class="py-2 px-4 border-b">Ayaka.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Feb 12, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 19, 2024</td>
+                            <td class="py-2 px-4 border-b">$95.66</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-green-200 text-green-800 rounded-full">Paid</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-002</td>
+                            <td class="py-2 px-4 border-b">Kamisato Ayato</td>
+                            <td class="py-2 px-4 border-b">Ayato.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Feb 10, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 17, 2024</td>
+                            <td class="py-2 px-4 border-b">$47.44</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-blue-200 text-blue-800 rounded-full">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-003</td>
+                            <td class="py-2 px-4 border-b">Raiden Shogun</td>
+                            <td class="py-2 px-4 border-b">Raiden.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Feb 8, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 15, 2024</td>
+                            <td class="py-2 px-4 border-b">$48.44</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-green-200 text-green-800 rounded-full">Paid</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-004</td>
+                            <td class="py-2 px-4 border-b">Ei Maulina</td>
+                            <td class="py-2 px-4 border-b">Maulina.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Feb 6, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 13, 2024</td>
+                            <td class="py-2 px-4 border-b">$43.44</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-red-200 text-red-800 rounded-full">Unpaid</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-005</td>
+                            <td class="py-2 px-4 border-b">Falah Maulana</td>
+                            <td class="py-2 px-4 border-b">Falah.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Feb 4, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 11, 2024</td>
+                            <td class="py-2 px-4 border-b">$43.44</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-blue-200 text-blue-800 rounded-full">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-006</td>
+                            <td class="py-2 px-4 border-b">Achmad Van</td>
+                            <td class="py-2 px-4 border-b">Achmad.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Feb 2, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 9, 2024</td>
+                            <td class="py-2 px-4 border-b">$43.44</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-blue-200 text-blue-800 rounded-full">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">INV-10022024-007</td>
+                            <td class="py-2 px-4 border-b">Xiaoli</td>
+                            <td class="py-2 px-4 border-b">Xiaoli.@gmail.com</td>
+                            <td class="py-2 px-4 border-b">Jan 31, 2024</td>
+                            <td class="py-2 px-4 border-b">Feb 8, 2024</td>
+                            <td class="py-2 px-4 border-b">$43.44</td>
+                            <td class="py-2 px-4 border-b"><span class="px-2 py-1 bg-blue-200 text-blue-800 rounded-full">Pending</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
