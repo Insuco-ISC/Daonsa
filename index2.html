@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b3a77"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <title>Registrar punto (Móvil) • Supabase + MapLibre</title>
+
+  <!-- MapLibre -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"/>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --ink:#0b3a77;
+      --ink2:#111827;
+      --muted:#6b7280;
+      --brand:#0b3a77;
+      --accent:#FFD400;
+      --radius:16px;
+      --shadow:0 6px 24px rgba(0,0,0,.18);
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+    *{box-sizing:border-box; font-family: system-ui, -apple-system, "Poppins", Segoe UI, Roboto, sans-serif}
+    html,body{height:100%; margin:0; background:#000}
+    #map{position:fixed; inset:0}
+
+    /* Panel base (desktop) */
+    .panel{
+      position:fixed; top:12px; left:12px; z-index:10;
+      width:360px; max-height:calc(100vh - 24px);
+      background:rgba(255,255,255,.96); backdrop-filter:blur(8px);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:14px; overflow:auto;
+    }
+
+    h3{margin:0 0 6px; color:var(--ink);}
+    .muted{color:var(--muted); font-size:13px; margin-bottom:8px}
+
+    input, textarea, button{
+      width:100%; margin-top:10px; padding:12px 12px;
+      border:1px solid #e5e7eb; border-radius:12px; font-size:16px;
+      outline:none;
+    }
+    input:focus, textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,212,0,.25)}
+    textarea{resize:none; min-height:84px}
+    button{background:var(--brand); color:#fff; font-weight:700; border:none; min-height:48px}
+    button.secondary{background:#fff; color:#111; border:1px solid #e5e7eb}
+    .row{display:flex; gap:8px}
+    .preview img{width:100%; border-radius:12px; border:1px solid #e5e7eb; margin-top:8px}
+
+    .coords{font-size:13px; color:#374151; margin-top:6px}
+    .stat{margin-top:10px; font-weight:700; color:var(--ink)}
+
+    /* Bottom-sheet en móvil */
+    @media (max-width: 640px){
+      .panel{
+        left:0; right:0; top:auto; bottom:0;
+        width:auto; max-height:65vh;
+        border-radius:18px 18px calc(12px + var(--safe-bottom)) calc(12px + var(--safe-bottom));
+        padding:16px 16px calc(10px + var(--safe-bottom));
+      }
+      .grab{
+        width:42px; height:4px; border-radius:4px; background:#cbd5e1;
+        margin:4px auto 8px; opacity:.9;
+      }
+      h3{font-size:18px}
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="panel" id="sheet">
+    <div class="grab"></div>
+    <h3>Registrar punto</h3>
+    <div class="muted">Toca el mapa para elegir el <b>destino</b>. Usa “Mi ubicación” para fijar el <b>origen</b>.</div>
+
+    <form id="registroForm" autocomplete="off">
+      <input type="text" id="nombre" placeholder="Nombre del punto" required inputmode="text">
+      <textarea id="descripcion" placeholder="Descripción (opcional)"></textarea>
+
+      <!-- Cámara del teléfono -->
+      <input type="file" id="foto" accept="image/*" capture="environment" required>
+      <div class="preview" id="preview"></div>
+
+      <div class="coords" id="coordLabel">Destino: (sin seleccionar)</div>
+
+      <div class="row">
+        <button id="btn" type="submit">Registrar</button>
+        <button id="loc" type="button" class="secondary">Mi ubicación</button>
+      </div>
+      <button id="clear" type="button" class="secondary" style="margin-top:10px">Limpiar</button>
+    </form>
+
+    <div id="status" class="stat">Sin ruta</div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm";
+
+    // Supabase (tus datos)
+    const SUPABASE_URL = "https://ykesyvvanjpkdwqwjjrs.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZXN5dnZhbmpwa2R3cXdqanJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzOTE5NjMsImV4cCI6MjA3Njk2Nzk2M30.VTdBQ36ngGzOgxzKEcClrzoVVf-npPgTy5s9cWQB_mk";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Mapa (MapTiler Streets)
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://api.maptiler.com/maps/streets/style.json?key=OKXAbeMXbilKuR7CWmsH',
+      center: [-99.1332, 19.4326], // MX
+      zoom: 5,
+      cooperativeGestures: true
+    });
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
+
+    // Estado
+    let origin=null, destination=null;
+    let originMarker=null, destMarker=null;
+
+    const $ = s => document.querySelector(s);
+    const btn=$("#btn"), locBtn=$("#loc"), clearBtn=$("#clear");
+    const statusEl=$("#status"), coordLabel=$("#coordLabel"), previewDiv=$("#preview"), inputFoto=$("#foto");
+
+    function setStatus(t){ statusEl.textContent = t; }
+    function setCoordLabel(){
+      coordLabel.textContent = destination ? `Destino: ${destination[1].toFixed(5)}, ${destination[0].toFixed(5)}` : "Destino: (sin seleccionar)";
+    }
+    function placeMarker(coord, color){ return new maplibregl.Marker({ color }).setLngLat(coord).addTo(map); }
+
+    map.on('load', () => {
+      map.addSource('route', { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
+      map.addLayer({ id:'route-line', type:'line', source:'route',
+        paint:{ 'line-color':'#0b3a77', 'line-width':5, 'line-opacity':0.95 }
+      });
+    });
+
+    // Ruta con OSRM público
+    async function routeOSRM(from, to){
+      const url=`https://router.project-osrm.org/route/v1/driving/${from[0]},${from[1]};${to[0]},${to[1]}?overview=full&geometries=geojson`;
+      const res=await fetch(url); if(!res.ok) throw new Error("OSRM "+res.status);
+      const json=await res.json(); const r=json.routes?.[0]; if(!r) throw new Error("Sin rutas");
+      map.getSource('route').setData({ type:'FeatureCollection', features:[{ type:'Feature', geometry:r.geometry }] });
+      const km=(r.distance/1000).toFixed(2), min=Math.round(r.duration/60);
+      setStatus(`Distancia: ${km} km • Tiempo: ${min} min`);
+      // Ajuste a la ruta
+      const coords=r.geometry.coordinates;
+      const bounds=coords.reduce((b,[x,y])=>[Math.min(b[0],x),Math.min(b[1],y),Math.max(b[2],x),Math.max(b[3],y)], [Infinity,Infinity,-Infinity,-Infinity]);
+      map.fitBounds([[bounds[0],bounds[1]],[bounds[2],bounds[3]]], { padding: 70, maxZoom: 16 });
+    }
+
+    // Tap para fijar destino
+    map.on('click', (e)=>{
+      destination=[e.lngLat.lng,e.lngLat.lat];
+      if (destMarker) destMarker.remove();
+      destMarker = placeMarker(destination, '#e11d48');
+      setCoordLabel();
+      if (origin) routeOSRM(origin, destination).catch(()=>setStatus("Error calculando ruta"));
+    });
+
+    // Mi ubicación (mejor para móvil)
+    locBtn.addEventListener('click', ()=>{
+      if(!navigator.geolocation) return alert("Tu dispositivo no permite geolocalización.");
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        origin=[pos.coords.longitude,pos.coords.latitude];
+        if(originMarker) originMarker.remove();
+        originMarker=placeMarker(origin,'#16a34a');
+        map.flyTo({ center: origin, zoom: 15 });
+        if (destination) routeOSRM(origin, destination).catch(()=>setStatus("Error calculando ruta"));
+      }, ()=>alert("No se pudo obtener tu ubicación"), { enableHighAccuracy:true, timeout:12000, maximumAge:0 });
+    });
+
+    // Limpiar
+    clearBtn.addEventListener('click', ()=>{
+      destination=null; if(destMarker) destMarker.remove();
+      map.getSource('route').setData({ type:'FeatureCollection', features:[] });
+      setCoordLabel(); setStatus("Sin ruta");
+    });
+
+    // Preview foto (móvil cámara)
+    inputFoto.addEventListener('change', (ev)=>{
+      const f=ev.target.files?.[0]; if(!f) return previewDiv.innerHTML="";
+      const r=new FileReader();
+      r.onload=e=> previewDiv.innerHTML=`<img alt="foto" src="${e.target.result}">`;
+      r.readAsDataURL(f);
+    });
+
+    // Subir y guardar
+    $("#registroForm").addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const nombre=$("#nombre").value.trim();
+      const descripcion=$("#descripcion").value.trim();
+      const file=inputFoto.files?.[0];
+      if(!destination) return alert("Selecciona primero el destino tocando el mapa.");
+      if(!file) return alert("Toma o selecciona una foto.");
+
+      btn.disabled=true; btn.textContent="Registrando…";
+      try{
+        const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+        const fileName=`${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+        const storagePath=`puntos/${fileName}`;
+
+        const { error:upErr } = await supabase.storage.from("puntos").upload(storagePath, file, { contentType:file.type, upsert:false });
+        if (upErr) throw upErr;
+
+        const { data:pub } = supabase.storage.from("puntos").getPublicUrl(storagePath);
+        const foto_url = pub?.publicUrl ?? null;
+
+        const { error:dbErr } = await supabase.from("puntos").insert([{
+          nombre, descripcion, foto_url, storage_path: storagePath,
+          lat: destination[1], lng: destination[0]
+        }]);
+        if (dbErr) throw dbErr;
+
+        alert("✅ Punto registrado");
+        // Trazar ruta si ya hay origen
+        if (origin) routeOSRM(origin, destination).catch(()=>setStatus("Error calculando ruta"));
+        // Reset campos (dejamos marcadores)
+        e.target.reset(); previewDiv.innerHTML="";
+      }catch(err){
+        console.error(err); alert("❌ "+(err.message||err));
+      }finally{
+        btn.disabled=false; btn.textContent="Registrar";
+      }
+    });
+
+    // Bordes de estados más notorios
+    map.on('styledata', ()=>{
+      ['admin-1-boundary','admin-1-boundary-bg'].forEach(id=>{
+        if(map.getLayer(id)){
+          map.setPaintProperty(id,'line-color','#0b3a77');
+          map.setPaintProperty(id,'line-width',2.2);
+          map.setPaintProperty(id,'line-opacity',1);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
